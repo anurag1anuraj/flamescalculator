@@ -327,11 +327,31 @@
 
 
 
+                    <!-- Share Result -->
+
+                    <div class="mt-7 flex flex-col sm:flex-row gap-3 justify-center">
+
+                        <button
+                            onclick="shareFlamesResult()"
+                            class="px-6 py-3 rounded-xl bg-pink-600 hover:bg-pink-700 text-white font-semibold transition"
+                        >
+                            📸 Share Result
+                        </button>
+
+                        <button
+                            onclick="downloadFlamesStory()"
+                            class="px-6 py-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold transition"
+                        >
+                            ⬇️ Download Story
+                        </button>
+
+                    </div>
+
                     <!-- Try Again -->
 
                     <button
                         onclick="resetGame()"
-                        class="mt-7 px-7 py-3 rounded-xl bg-gray-100 hover:bg-gray-200 font-semibold transition"
+                        class="mt-4 px-7 py-3 rounded-xl bg-gray-100 hover:bg-gray-200 font-semibold transition"
                     >
 
                         🔄 Try Again
@@ -1266,6 +1286,255 @@
 
         }
 
+
+
+        // ================= INSTAGRAM STORY SHARE =================
+
+        function createFlamesStory() {
+
+            const canvas = document.createElement("canvas");
+
+            // Instagram Story size: 1080 x 1920
+            canvas.width = 1080;
+            canvas.height = 1920;
+
+            const ctx = canvas.getContext("2d");
+
+            // Background
+            const gradient = ctx.createLinearGradient(0, 0, 1080, 1920);
+
+            gradient.addColorStop(0, "#fff1f7");
+            gradient.addColorStop(0.5, "#ffffff");
+            gradient.addColorStop(1, "#ffe4ef");
+
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 1080, 1920);
+
+            // Decorative circles
+            ctx.fillStyle = "rgba(236, 72, 153, 0.08)";
+            ctx.beginPath();
+            ctx.arc(120, 170, 170, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(960, 1750, 220, 0, Math.PI * 2);
+            ctx.fill();
+
+            // FLAMES heading
+            ctx.textAlign = "center";
+
+            ctx.font = "bold 72px Arial, sans-serif";
+            ctx.fillStyle = "#db2777";
+            ctx.fillText("🔥 FLAMES 🔥", 540, 300);
+
+            // Names - use the original values typed by the user
+            const originalName1 =
+                document.getElementById("name1").value.trim();
+
+            const originalName2 =
+                document.getElementById("name2").value.trim();
+
+            ctx.font = "bold 52px Arial, sans-serif";
+            ctx.fillStyle = "#111827";
+
+            // Keep long names inside the story
+            let namesText = originalName1 + " ❤️ " + originalName2;
+
+            if (namesText.length > 30) {
+                ctx.font = "bold 42px Arial, sans-serif";
+            }
+
+            ctx.fillText(namesText, 540, 520);
+
+            // Result emoji
+            const resultEmoji =
+                document.getElementById("resultEmoji").textContent;
+
+            ctx.font = "90px Arial, sans-serif";
+            ctx.fillText(resultEmoji, 540, 760);
+
+            // Result title
+            const resultTitle =
+                document.getElementById("resultTitle").textContent;
+
+            ctx.font = "bold 96px Arial, sans-serif";
+            ctx.fillStyle = "#ec4899";
+            ctx.fillText(resultTitle, 540, 900);
+
+            // Result description
+            const description =
+                document.getElementById("resultDescription").textContent;
+
+            ctx.fillStyle = "#4b5563";
+            ctx.font = "38px Arial, sans-serif";
+
+            // Simple text wrapping
+            const words = description.split(" ");
+            const lines = [];
+            let line = "";
+
+            words.forEach(function(word) {
+
+                const testLine = line
+                    ? line + " " + word
+                    : word;
+
+                if (ctx.measureText(testLine).width > 800) {
+                    lines.push(line);
+                    line = word;
+                } else {
+                    line = testLine;
+                }
+
+            });
+
+            if (line) {
+                lines.push(line);
+            }
+
+            lines.slice(0, 3).forEach(function(text, i) {
+
+                ctx.fillText(
+                    text,
+                    540,
+                    1010 + (i * 55)
+                );
+
+            });
+
+            // Divider
+            ctx.beginPath();
+            ctx.moveTo(250, 1220);
+            ctx.lineTo(830, 1220);
+
+            ctx.strokeStyle = "#f9a8d4";
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            // Remaining count
+            const count =
+                document.getElementById("remainingCount").textContent;
+
+            ctx.font = "32px Arial, sans-serif";
+            ctx.fillStyle = "#9ca3af";
+
+            ctx.fillText(
+                "FLAMES remaining letters: " + count,
+                540,
+                1320
+            );
+
+            // Website branding
+            ctx.font = "bold 38px Arial, sans-serif";
+            ctx.fillStyle = "#374151";
+
+            ctx.fillText(
+                "Check your result at",
+                540,
+                1540
+            );
+
+            ctx.font = "bold 50px Arial, sans-serif";
+            ctx.fillStyle = "#db2777";
+
+            ctx.fillText(
+                "flamescalculator.online",
+                540,
+                1610
+            );
+
+            // Footer
+            ctx.font = "30px Arial, sans-serif";
+            ctx.fillStyle = "#9ca3af";
+
+            ctx.fillText(
+                "❤️ Fun • Love • Friendship • FLAMES",
+                540,
+                1770
+            );
+
+            return canvas;
+        }
+
+
+        // ================= DOWNLOAD STORY =================
+
+        function downloadFlamesStory() {
+
+            const canvas = createFlamesStory();
+
+            const link = document.createElement("a");
+
+            link.download = "flames-result-story.png";
+
+            link.href = canvas.toDataURL("image/png");
+
+            link.click();
+        }
+
+
+        // ================= SHARE RESULT =================
+
+        async function shareFlamesResult() {
+
+            const canvas = createFlamesStory();
+
+            canvas.toBlob(async function(blob) {
+
+                const file = new File(
+                    [blob],
+                    "flames-result-story.png",
+                    {
+                        type: "image/png"
+                    }
+                );
+
+                // Mobile browsers that support file sharing
+                if (
+                    navigator.share &&
+                    navigator.canShare &&
+                    navigator.canShare({
+                        files: [file]
+                    })
+                ) {
+
+                    try {
+
+                        await navigator.share({
+                            title: "My FLAMES Result ❤️",
+                            text: "Check out my FLAMES result!",
+                            files: [file]
+                        });
+
+                    } catch (error) {
+
+                        // User cancelled the share sheet.
+                        console.log("Share cancelled.");
+
+                    }
+
+                } else {
+
+                    // Fallback for browsers without file sharing
+                    const link = document.createElement("a");
+
+                    link.download = "flames-result-story.png";
+
+                    link.href = URL.createObjectURL(blob);
+
+                    link.click();
+
+                    setTimeout(function() {
+                        URL.revokeObjectURL(link.href);
+                    }, 1000);
+
+                    alert(
+                        "Your FLAMES Story image has been downloaded! ❤️"
+                    );
+                }
+
+            }, "image/png");
+        }
 
 
         // ================= RESET =================
