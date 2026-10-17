@@ -1,0 +1,738 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FLAMES.js Documentation | FLAMES Calculator</title>
+    <meta name="description" content="Learn how to use FLAMES.js, a simple JavaScript library for calculating FLAMES relationship results on your website.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://flamescalculator.online/docs.html">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 100px;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .code-block {
+            overflow-x: auto;
+            white-space: pre;
+            scrollbar-width: thin;
+        }
+
+        .doc-link {
+            transition: color 0.2s ease;
+        }
+
+        .doc-link:hover {
+            color: #db2777;
+        }
+
+        ::selection {
+            background: #fbcfe8;
+            color: #831843;
+        }
+    </style>
+</head>
+
+<body class="bg-white text-slate-800">
+
+    <!-- Header -->
+    
+<header class="bg-white border-b border-gray-200">
+  <div class="max-w-6xl mx-auto px-5 py-4">
+
+    <div class="flex items-center justify-between">
+
+      <!-- Logo -->
+      <a
+        href="index.html"
+        class="text-2xl font-bold tracking-tight"
+      >
+        FLAMES
+      </a>
+
+
+      <!-- Desktop Navigation -->
+      <nav class="hidden md:flex items-center gap-6">
+ <a
+          href="index.html"
+          class="text-sm font-medium text-gray-600 hover:text-black transition"
+        >
+          Home
+        </a>
+        <a
+          href="about.html"
+          class="text-sm font-medium text-gray-600 hover:text-black transition"
+        >
+          About
+        </a>
+
+        <a
+          href="terms.html"
+          class="text-sm font-medium text-gray-600 hover:text-black transition"
+        >
+          Terms
+        </a>
+
+        <a
+          href="privacy.html"
+          class="text-sm font-medium text-gray-600 hover:text-black transition"
+        >
+          Privacy
+        </a>
+
+      </nav>
+
+
+      <!-- Mobile Menu Button -->
+      <button
+        id="menuBtn"
+        type="button"
+        aria-label="Open menu"
+        class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition"
+      >
+
+        <!-- Menu Icon -->
+        <svg
+          id="menuIcon"
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-6 h-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M4 6h16M4 12h16M4 18h16"
+          />
+        </svg>
+
+      </button>
+
+    </div>
+
+
+    <!-- Mobile Navigation -->
+    <nav
+      id="mobileMenu"
+      class="hidden md:hidden pt-4 pb-2"
+    >
+
+      <div class="flex flex-col gap-1">
+
+        <a
+          href="about.html"
+          class="px-3 py-3 rounded-lg text-sm font-medium
+                 text-gray-700 hover:bg-gray-100 transition"
+        >
+          About
+        </a>
+
+        <a
+          href="terms.html"
+          class="px-3 py-3 rounded-lg text-sm font-medium
+                 text-gray-700 hover:bg-gray-100 transition"
+        >
+          Terms & Conditions
+        </a>
+
+        <a
+          href="privacy.html"
+          class="px-3 py-3 rounded-lg text-sm font-medium
+                 text-gray-700 hover:bg-gray-100 transition"
+        >
+          Privacy Policy
+        </a>
+
+      </div>
+
+    </nav>
+
+  </div>
+</header>
+
+  <!-- Mobile Menu Script -->
+<script>
+  const menuBtn = document.getElementById("menuBtn");
+  const mobileMenu = document.getElementById("mobileMenu");
+
+  menuBtn.addEventListener("click", () => {
+    mobileMenu.classList.toggle("hidden");
+  });
+</script>
+
+    <!-- Hero -->
+    <section class="border-b border-pink-100 bg-pink-50">
+        <div class="mx-auto max-w-5xl px-5 py-16 md:py-24">
+
+            <span class="inline-flex rounded-full border border-pink-200 bg-white px-3 py-1 text-xs font-bold uppercase tracking-wider text-pink-700">
+                JavaScript Library
+            </span>
+
+            <h1 class="mt-6 max-w-3xl text-4xl font-extrabold tracking-tight text-slate-950 md:text-6xl">
+                FLAMES.js Documentation
+            </h1>
+
+            <p class="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+                Add FLAMES name compatibility calculations to your website
+                using a lightweight JavaScript file. Build your own interface
+                and use the library to calculate the result.
+            </p>
+
+            <div class="mt-8 flex flex-wrap gap-3">
+                <a href="#getting-started"
+                   class="rounded-lg bg-pink-600 px-5 py-3 text-sm font-bold text-white hover:bg-pink-700">
+                    Get Started
+                </a>
+
+                <a href="#examples"
+                   class="rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-800 hover:bg-slate-50">
+                    View Examples
+                </a>
+            </div>
+
+            <div class="mt-8 rounded-xl border border-pink-100 bg-white p-4">
+                <p class="mb-2 text-xs font-bold uppercase tracking-wide text-slate-500">
+                    Library URL
+                </p>
+
+                <code class="break-all text-sm text-pink-700">
+                    https://flamescalculator.online/flames.js
+                </code>
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- Main Documentation -->
+    <main class="mx-auto grid max-w-7xl gap-12 px-5 py-12 md:grid-cols-[220px_minmax(0,1fr)] md:py-16">
+
+        <!-- Sidebar -->
+        <aside class="h-fit md:sticky md:top-28">
+            <p class="mb-4 text-xs font-bold uppercase tracking-widest text-slate-400">
+                Documentation
+            </p>
+
+            <nav class="space-y-3 border-l border-slate-200 pl-4 text-sm">
+                <a href="#introduction" class="doc-link block">Introduction</a>
+                <a href="#features" class="doc-link block">Features</a>
+                <a href="#getting-started" class="doc-link block">Installation</a>
+                <a href="#usage" class="doc-link block">Basic Usage</a>
+                <a href="#return-values" class="doc-link block">Return Values</a>
+                <a href="#examples" class="doc-link block">Code Examples</a>
+                <a href="#errors" class="doc-link block">Error Handling</a>
+                <a href="#privacy" class="doc-link block">Privacy</a>
+                <a href="#faq" class="doc-link block">FAQ</a>
+            </nav>
+        </aside>
+
+
+        <!-- Content -->
+        <div class="min-w-0 space-y-14">
+
+            <!-- Introduction -->
+            <section id="introduction">
+                <h2 class="text-2xl font-bold tracking-tight text-slate-950">
+                    Introduction
+                </h2>
+
+                <p class="mt-4 leading-7 text-slate-600">
+                    FLAMES.js is a browser-side JavaScript library for calculating
+                    FLAMES results from two names. It allows developers to create
+                    their own designs, forms and interactive experiences without
+                    writing the calculation logic from scratch.
+                </p>
+
+                <p class="mt-4 leading-7 text-slate-600">
+                    You can use the library with a plain HTML page, CSS, JavaScript
+                    or a frontend framework that supports loading browser scripts.
+                    Your website controls the interface; FLAMES.js handles the
+                    calculation.
+                </p>
+
+                <div class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                    <p class="font-bold text-amber-900">Important</p>
+                    <p class="mt-2 text-sm leading-6 text-amber-800">
+                        This is a client-side JavaScript library, not a REST API.
+                        It runs in the visitor's browser after the script is loaded.
+                        It does not require an API key or a server request for each calculation.
+                    </p>
+                </div>
+            </section>
+
+
+            <!-- Features -->
+            <section id="features">
+                <h2 class="text-2xl font-bold tracking-tight text-slate-950">
+                    Features
+                </h2>
+
+                <div class="mt-6 grid gap-4 sm:grid-cols-2">
+
+                    <div class="rounded-xl border border-slate-200 p-5">
+                        <div class="mb-3 text-xl">⚡</div>
+                        <h3 class="font-bold text-slate-900">Simple function</h3>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">
+                            Calculate a result by passing two names to one function.
+                        </p>
+                    </div>
+
+                    <div class="rounded-xl border border-slate-200 p-5">
+                        <div class="mb-3 text-xl">🎨</div>
+                        <h3 class="font-bold text-slate-900">Your own UI</h3>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">
+                            Design your form, buttons, animations and result screen yourself.
+                        </p>
+                    </div>
+
+                    <div class="rounded-xl border border-slate-200 p-5">
+                        <div class="mb-3 text-xl">🌐</div>
+                        <h3 class="font-bold text-slate-900">Browser-based</h3>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">
+                            Use it on websites that can load a regular JavaScript file.
+                        </p>
+                    </div>
+
+                    <div class="rounded-xl border border-slate-200 p-5">
+                        <div class="mb-3 text-xl">🔑</div>
+                        <h3 class="font-bold text-slate-900">No API key</h3>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">
+                            No API key is needed for the documented browser-side function.
+                        </p>
+                    </div>
+
+                </div>
+            </section>
+
+
+            <!-- Installation -->
+            <section id="getting-started">
+                <h2 class="text-2xl font-bold tracking-tight text-slate-950">
+                    Installation
+                </h2>
+
+                <p class="mt-4 leading-7 text-slate-600">
+                    Add the FLAMES.js script to your HTML page. Place it before
+                    your own JavaScript code that uses the library.
+                </p>
+
+                <h3 class="mt-6 font-bold text-slate-900">
+                    Step 1: Include the library
+                </h3>
+
+                <div class="code-block mt-3 rounded-xl bg-slate-950 p-5 text-sm leading-7 text-slate-100">
+<code>&lt;script src="https://flamescalculator.online/flames.js"&gt;&lt;/script&gt;</code>
+                </div>
+
+                <p class="mt-4 leading-7 text-slate-600">
+                    This loads the script from the FLAMES Calculator website.
+                    The URL must remain publicly accessible for other websites
+                    to use it.
+                </p>
+
+                <h3 class="mt-6 font-bold text-slate-900">
+                    Step 2: Call the function
+                </h3>
+
+                <div class="code-block mt-3 rounded-xl bg-slate-950 p-5 text-sm leading-7 text-slate-100">
+<code>const result = FLAMES.calculate("Anurag", "Nandhana");
+
+console.log(result);</code>
+                </div>
+
+                <p class="mt-4 leading-7 text-slate-600">
+                    The returned value is an object containing the result fields
+                    described below.
+                </p>
+            </section>
+
+
+            <!-- Usage -->
+            <section id="usage">
+                <h2 class="text-2xl font-bold tracking-tight text-slate-950">
+                    Basic Usage
+                </h2>
+
+                <p class="mt-4 leading-7 text-slate-600">
+                    Use <code class="rounded bg-slate-100 px-1.5 py-1 text-pink-700">FLAMES.calculate()</code>
+                    and provide two name strings.
+                </p>
+
+                <div class="code-block mt-5 rounded-xl bg-slate-950 p-5 text-sm leading-7 text-slate-100">
+<code>const result = FLAMES.calculate("Anurag", "Nandhana");
+
+console.log(result.letter);
+console.log(result.result);
+console.log(result.remainingCount);</code>
+                </div>
+
+                <div class="mt-5 overflow-x-auto rounded-xl border border-slate-200">
+                    <table class="w-full min-w-[450px] text-left text-sm">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th class="px-4 py-3 font-bold">Parameter</th>
+                                <th class="px-4 py-3 font-bold">Type</th>
+                                <th class="px-4 py-3 font-bold">Description</th>
+                            </tr>
+                        </thead>
+
+                        <tbody class="divide-y divide-slate-200">
+                            <tr>
+                                <td class="px-4 py-3 font-mono text-pink-700">name1</td>
+                                <td class="px-4 py-3">String</td>
+                                <td class="px-4 py-3 text-slate-600">First person's name.</td>
+                            </tr>
+
+                            <tr>
+                                <td class="px-4 py-3 font-mono text-pink-700">name2</td>
+                                <td class="px-4 py-3">String</td>
+                                <td class="px-4 py-3 text-slate-600">Second person's name.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+
+            <!-- Return values -->
+            <section id="return-values">
+                <h2 class="text-2xl font-bold tracking-tight text-slate-950">
+                    Return Values
+                </h2>
+
+                <p class="mt-4 leading-7 text-slate-600">
+                    The function returns an object with three properties.
+                </p>
+
+                <div class="code-block mt-5 rounded-xl bg-slate-950 p-5 text-sm leading-7 text-slate-100">
+<code>{
+    letter: "F",
+    result: "Friends",
+    remainingCount: 4
+}</code>
+                </div>
+
+                <p class="mt-3 text-sm text-slate-500">
+                    The values above illustrate the object structure only. Actual
+                    values depend on the supplied names and the library's algorithm.
+                </p>
+
+                <div class="mt-6 space-y-4">
+
+                    <div class="rounded-xl border border-slate-200 p-4">
+                        <code class="font-bold text-pink-700">letter</code>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">
+                            The FLAMES letter associated with the calculated result.
+                        </p>
+                    </div>
+
+                    <div class="rounded-xl border border-slate-200 p-4">
+                        <code class="font-bold text-pink-700">result</code>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">
+                            The text label corresponding to the result.
+                        </p>
+                    </div>
+
+                    <div class="rounded-xl border border-slate-200 p-4">
+                        <code class="font-bold text-pink-700">remainingCount</code>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">
+                            The remaining character count used by the calculation.
+                        </p>
+                    </div>
+
+                </div>
+            </section>
+
+
+            <!-- Examples -->
+            <section id="examples">
+                <h2 class="text-2xl font-bold tracking-tight text-slate-950">
+                    Code Examples
+                </h2>
+
+                <h3 class="mt-6 font-bold text-slate-900">
+                    Example 1: Display the result
+                </h3>
+
+                <p class="mt-3 leading-7 text-slate-600">
+                    Create a simple form and show the calculated result on your page.
+                </p>
+
+                <div class="code-block mt-4 rounded-xl bg-slate-950 p-5 text-sm leading-7 text-slate-100">
+<code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;My FLAMES App&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+    &lt;h1&gt;FLAMES Calculator&lt;/h1&gt;
+
+    &lt;input id="name1" type="text" placeholder="First name"&gt;
+    &lt;input id="name2" type="text" placeholder="Second name"&gt;
+
+    &lt;button id="calculateButton"&gt;Calculate&lt;/button&gt;
+
+    &lt;p id="output"&gt;&lt;/p&gt;
+
+    &lt;script src="https://flamescalculator.online/flames.js"&gt;&lt;/script&gt;
+
+    &lt;script&gt;
+        document
+            .getElementById("calculateButton")
+            .addEventListener("click", function () {
+
+                const name1 = document.getElementById("name1").value;
+                const name2 = document.getElementById("name2").value;
+                const output = document.getElementById("output");
+
+                try {
+                    const answer = FLAMES.calculate(name1, name2);
+
+                    output.textContent =
+                        "Result: " + answer.result +
+                        " (" + answer.letter + ")";
+
+                } catch (error) {
+                    output.textContent = error.message;
+                }
+            });
+    &lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;</code>
+                </div>
+
+                <h3 class="mt-8 font-bold text-slate-900">
+                    Example 2: Use your own design
+                </h3>
+
+                <p class="mt-3 leading-7 text-slate-600">
+                    You are not required to use a particular HTML layout or CSS
+                    framework. Build your own design and call the library when
+                    the visitor submits their names.
+                </p>
+
+                <div class="code-block mt-4 rounded-xl bg-slate-950 p-5 text-sm leading-7 text-slate-100">
+<code>function getFlamesResult(firstName, secondName) {
+    return FLAMES.calculate(firstName, secondName);
+}
+
+// Use the returned object in your own UI.
+const answer = getFlamesResult("Alex", "Sam");
+
+document.querySelector("#result").textContent = answer.result;</code>
+                </div>
+            </section>
+
+
+            <!-- Error handling -->
+            <section id="errors">
+                <h2 class="text-2xl font-bold tracking-tight text-slate-950">
+                    Error Handling
+                </h2>
+
+                <p class="mt-4 leading-7 text-slate-600">
+                    Validate user input and handle errors before displaying a result.
+                    The library's documented implementation may throw an error if
+                    its input validation fails.
+                </p>
+
+                <div class="code-block mt-5 rounded-xl bg-slate-950 p-5 text-sm leading-7 text-slate-100">
+<code>try {
+    const answer = FLAMES.calculate(
+        "Anurag",
+        "Nandhana"
+    );
+
+    console.log(answer.result);
+
+} catch (error) {
+    console.error("Unable to calculate:", error.message);
+}</code>
+                </div>
+
+                <p class="mt-4 text-sm leading-6 text-slate-500">
+                    Check the actual library implementation if you need to document
+                    the exact validation rules or error messages.
+                </p>
+            </section>
+
+
+            <!-- Privacy -->
+            <section id="privacy">
+                <h2 class="text-2xl font-bold tracking-tight text-slate-950">
+                    Privacy and Usage
+                </h2>
+
+                <p class="mt-4 leading-7 text-slate-600">
+                    The library is designed to perform the calculation in the browser.
+                    The documented function does not require a dedicated API request
+                    for each calculation.
+                </p>
+
+                <p class="mt-4 leading-7 text-slate-600">
+                    Your website should explain its own data practices if it collects
+                    names or other information through additional scripts, analytics,
+                    forms or external services. Avoid collecting information that
+                    your website does not need.
+                </p>
+
+                <div class="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-5">
+                    <h3 class="font-bold text-slate-900">For developers</h3>
+                    <p class="mt-2 text-sm leading-6 text-slate-600">
+                        The JavaScript file must be publicly accessible. Changes to
+                        the hosted file may affect websites that depend on it, so
+                        test updates before publishing them.
+                    </p>
+                </div>
+            </section>
+
+
+            <!-- FAQ -->
+            <section id="faq">
+                <h2 class="text-2xl font-bold tracking-tight text-slate-950">
+                    Frequently Asked Questions
+                </h2>
+
+                <div class="mt-6 space-y-5">
+
+                    <div>
+                        <h3 class="font-bold text-slate-900">
+                            Is FLAMES.js free to use?
+                        </h3>
+                        <p class="mt-2 leading-7 text-slate-600">
+                            Check the usage terms you publish for the library before
+                            using it in personal or commercial projects.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-slate-900">
+                            Do I need an API key?
+                        </h3>
+                        <p class="mt-2 leading-7 text-slate-600">
+                            No API key is needed for the client-side function shown
+                            in this documentation.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-slate-900">
+                            Can I design my own calculator?
+                        </h3>
+                        <p class="mt-2 leading-7 text-slate-600">
+                            Yes. You can create your own layout, colors, animations
+                            and result screen, then call FLAMES.calculate() from
+                            your JavaScript.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-slate-900">
+                            Is this a REST API?
+                        </h3>
+                        <p class="mt-2 leading-7 text-slate-600">
+                            No. It is a JavaScript library loaded into a browser.
+                            A REST API would require a server endpoint that accepts
+                            requests and returns data.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-slate-900">
+                            Where can I find the library?
+                        </h3>
+                        <p class="mt-2 break-all leading-7 text-slate-600">
+                            <a class="text-pink-700 underline"
+                               href="https://flamescalculator.online/flames.js">
+                                https://flamescalculator.online/flames.js
+                            </a>
+                        </p>
+                    </div>
+
+                </div>
+            </section>
+
+
+            <!-- Disclaimer -->
+            <section class="rounded-2xl border border-pink-100 bg-pink-50 p-6">
+                <h2 class="text-lg font-bold text-slate-950">
+                    Disclaimer
+                </h2>
+
+                <p class="mt-3 text-sm leading-7 text-slate-600">
+                    FLAMES is intended for entertainment purposes only. Its results
+                    do not scientifically determine relationship compatibility,
+                    personality or the future of a relationship.
+                </p>
+            </section>
+
+
+            <!-- Support -->
+            <section class="border-t border-slate-200 pt-8">
+                <h2 class="text-xl font-bold text-slate-950">
+                    Need Help?
+                </h2>
+
+                <p class="mt-3 leading-7 text-slate-600">
+                    For questions about this documentation or the FLAMES Calculator
+                    website, contact:
+                </p>
+
+                <a href="mailto:heycoders.anurag@gmail.com"
+                   class="mt-3 inline-block font-semibold text-pink-700 hover:underline">
+                    heycoders.anurag@gmail.com
+                </a>
+            </section>
+
+        </div>
+    </main>
+
+
+    <!-- Footer -->
+
+    <footer class="bg-slate-900 text-white px-5 py-8">
+
+    <div class="max-w-6xl mx-auto text-center">
+
+      <p class="font-bold text-lg">
+        FLAMES<span class="text-pink-400">.</span>
+      </p>
+
+      <p class="text-slate-400 text-sm mt-2">
+        A fun classic name game.
+      </p>
+      <div class="links flex gap-1 flex-wrap items-center justify-center">
+           <a href="privacy.html">Privacy Policy</a>
+            <a href="terms.html">Terms & Conditions</a>
+      </div>
+
+      <p class="text-slate-500 text-xs mt-5">
+        © <span id="flamesY"></span> FLAMES. For entertainment purposes only.
+      </p>
+
+    </div>
+
+  </footer>
+    
+
+
+   
+
+</body>
+</html>
