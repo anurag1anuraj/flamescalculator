@@ -322,7 +322,7 @@ document.querySelector("#preview-post").addEventListener("click", () => {
     return;
   }
   const contentBackground = document.querySelector("#editor-bg-color").value;
-  preview.document.write(`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(title)} — LinkHub preview</title><link rel="stylesheet" href="${new URL("css/style.css", location.href).href}"></head><body><main class="article-main"><p class="preview-note">Preview only — not published</p><header class="article-header"><h1>${escapeHtml(title)}</h1><p class="article-excerpt">${escapeHtml(excerpt)}</p></header><article class="article-content" style="background:${contentBackground};padding:18px;border-radius:12px">${content}</article></main></body></html>`);
+  preview.document.write(`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(title)} — Flames preview</title><link rel="stylesheet" href="${new URL("css/style.css", location.href).href}"></head><body><main class="article-main"><p class="preview-note">Preview only — not published</p><header class="article-header"><h1>${escapeHtml(title)}</h1><p class="article-excerpt">${escapeHtml(excerpt)}</p></header><article class="article-content" style="background:${contentBackground};padding:18px;border-radius:12px">${content}</article></main></body></html>`);
   preview.document.close();
 });
 

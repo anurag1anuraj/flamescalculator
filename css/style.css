@@ -877,7 +877,7 @@ button {
     }
 }
 
-/* LinkHub editorial homepage — inspired by the supplied publication layout */
+/* Flames editorial homepage — inspired by the supplied publication layout */
 .home-page {
     background: #f3f3f3;
     color: #171717;
@@ -1630,8 +1630,8 @@ button {
     }
 }
 
-/* LinkHub editorial travel-inspired responsive homepage */
-.linkhub-travel-style {
+/* Flames editorial travel-inspired responsive homepage */
+.Flames-travel-style {
     padding: 0;
     background: white;
     color: #20221f;
@@ -1639,11 +1639,11 @@ button {
     line-height: 1.5
 }
 
-.linkhub-travel-style * {
+.Flames-travel-style * {
     box-sizing: border-box
 }
 
-.linkhub-travel-style a {
+.Flames-travel-style a {
     color: inherit;
     text-decoration: none
 }
@@ -2175,10 +2175,10 @@ button {
     height: 9px;
     border-radius: 50%;
     background: #a4bf45;
-    animation: linkhub-pulse 1s infinite alternate
+    animation: Flames-pulse 1s infinite alternate
 }
 
-@keyframes linkhub-pulse {
+@keyframes Flames-pulse {
     to {
         opacity: .25;
         transform: scale(.7)

@@ -18,7 +18,7 @@ function postUrl(post) { return `blog.html?slug=${encodeURIComponent(post.slug |
 function imageMarkup(post) {
   return post.imageUrl
     ? `<img src="${escapeHtml(post.imageUrl)}" alt="${escapeHtml(post.title)}" loading="lazy" onerror="this.parentElement.classList.add('no-image');this.remove()">`
-    : `<div class="card-image-fallback"><span>LINKHUB</span><i>↗</i></div>`;
+    : `<div class="card-image-fallback"><span>FLAMES</span><i>↗</i></div>`;
 }
 function dateValue(post) { return post.createdAt?.toMillis ? post.createdAt.toMillis() : new Date(post.createdAt || 0).getTime(); }
 function getFilteredPosts() {
@@ -49,7 +49,7 @@ function render() {
   clearFilter.classList.toggle("hidden", activeCategory === "All" && !searchTerm);
   visible.forEach((post,index) => {
     const card = document.createElement("article"); card.className = "article-card";
-    card.innerHTML = `<a class="article-image" href="${postUrl(post)}">${imageMarkup(post)}<span class="image-category">${escapeHtml(post.category || "Article")}</span><span class="image-arrow">↗</span></a><div class="article-card-body"><div class="article-meta"><time>${escapeHtml(formatDate(post.createdAt))}</time><span>•</span><span>${escapeHtml(post.readTime || "5 min read")}</span></div><h3><a href="${postUrl(post)}">${escapeHtml(post.title || "Untitled article")}</a></h3><p>${escapeHtml(post.excerpt || "Explore this story on LinkHub.")}</p><a class="author-link" href="${postUrl(post)}"><span class="author-avatar">${escapeHtml((post.author || "L").trim().charAt(0).toUpperCase())}</span><span>${escapeHtml(post.author || "LinkHub Editorial")}</span><span class="author-arrow">↗</span></a></div>`;
+    card.innerHTML = `<a class="article-image" href="${postUrl(post)}">${imageMarkup(post)}<span class="image-category">${escapeHtml(post.category || "Article")}</span><span class="image-arrow">↗</span></a><div class="article-card-body"><div class="article-meta"><time>${escapeHtml(formatDate(post.createdAt))}</time><span>•</span><span>${escapeHtml(post.readTime || "5 min read")}</span></div><h3><a href="${postUrl(post)}">${escapeHtml(post.title || "Untitled article")}</a></h3><p>${escapeHtml(post.excerpt || "Explore this story on Flames.")}</p><a class="author-link" href="${postUrl(post)}"><span class="author-avatar">${escapeHtml((post.author || "L").trim().charAt(0).toUpperCase())}</span><span>${escapeHtml(post.author || "Flames Editorial")}</span><span class="author-arrow">↗</span></a></div>`;
     grid.appendChild(card);
   });
   renderPagination(posts.length);
@@ -73,5 +73,5 @@ try {
   render();
 } catch(error) {
   grid.innerHTML = `<div class="load-error"><strong>Stories couldn’t load.</strong><p>Please check your internet connection and Firestore published-post read rules.</p></div>`;
-  console.error("LinkHub articles failed to load:",error);
+  console.error("Flames articles failed to load:",error);
 }

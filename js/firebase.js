@@ -1,4 +1,4 @@
-// LinkHub Firebase setup. Replace these values only if you use a different Firebase web app.
+// Flames Firebase setup. Replace these values only if you use a different Firebase web app.
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";

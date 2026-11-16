@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin.html
 
-Sitemap: https://linkhub-three-murex.vercel.app/sitemap.xml
+Sitemap: https://flamescalculator.online/sitemap.xml

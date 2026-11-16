@@ -10,7 +10,7 @@ if (!admin.apps.length) {
 }
 
 const db = admin.firestore();
-const BASE_URL = "https://linkhub-three-murex.vercel.app";
+const BASE_URL = "https://flamescalculator.online";
 
 function escapeXml(value) {
   return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;")

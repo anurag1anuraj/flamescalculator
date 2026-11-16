@@ -55,8 +55,8 @@ if (!slug) {
     if (!found) {
       root.innerHTML = '<p class="muted">This article could not be found or is not published.</p>';
     } else {
-      const articleTitle = `${found.title || "Article"} — LinkHub`;
-      const description = (found.excerpt || found.title || "Read this story on LinkHub.").replace(/\s+/g, " ").slice(0, 155);
+      const articleTitle = `${found.title || "Article"} — Flames`;
+      const description = (found.excerpt || found.title || "Read this story on Flames.").replace(/\s+/g, " ").slice(0, 155);
       const canonicalUrl = `${location.origin}${location.pathname}?slug=${encodeURIComponent(found.slug || slug)}`;
       document.title = articleTitle;
       document.querySelector('meta[name="description"]').content = description;
@@ -71,12 +71,12 @@ if (!slug) {
       if (found.imageUrl) setMeta('meta[property="og:image"]', found.imageUrl);
       const structuredData = {
         "@context": "https://schema.org", "@type": "BlogPosting",
-        "headline": found.title || "LinkHub article", "description": description,
+        "headline": found.title || "Flames article", "description": description,
         "mainEntityOfPage": { "@type": "WebPage", "@id": canonicalUrl },
         "datePublished": found.createdAt?.toDate ? found.createdAt.toDate().toISOString() : undefined,
         "dateModified": (found.updatedAt?.toDate ? found.updatedAt.toDate().toISOString() : undefined),
-        "author": { "@type": "Person", "name": found.author || "LinkHub Editorial" },
-        "publisher": { "@type": "Organization", "name": "LinkHub" },
+        "author": { "@type": "Person", "name": found.author || "Flames Editorial" },
+        "publisher": { "@type": "Organization", "name": "Flames" },
         "image": found.imageUrl || undefined
       };
       let jsonLd = document.querySelector('#article-jsonld');
