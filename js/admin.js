@@ -13,6 +13,20 @@ const postList = document.querySelector("#admin-post-list");
 const contentEditor = document.querySelector("#post-content");
 let postsCache = [];
 
+function getYouTubeVideoId(url) {
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+    if (host === "youtu.be") return parsed.pathname.split("/").filter(Boolean)[0] || "";
+    if (host === "youtube.com" || host === "m.youtube.com" || host === "youtube-nocookie.com") {
+      if (parsed.pathname === "/watch") return parsed.searchParams.get("v") || "";
+      const parts = parsed.pathname.split("/").filter(Boolean);
+      if (["embed", "shorts", "live"].includes(parts[0])) return parts[1] || "";
+    }
+  } catch (_) {}
+  return "";
+}
+
 function message(el, text, isError = false) {
   el.textContent = text;
   el.classList.toggle("error", isError);
@@ -266,6 +280,32 @@ function insertEditorNode(node) {
   selection.addRange(after);
   editorRange = after.cloneRange();
 }
+
+// Insert the YouTube player exactly where the caret is in the article.
+document.querySelector("#insert-youtube").addEventListener("mousedown", rememberEditorRange);
+document.querySelector("#insert-youtube").addEventListener("click", () => {
+  rememberEditorRange();
+  const url = prompt("Paste a YouTube video URL:");
+  if (!url) return;
+  const videoId = getYouTubeVideoId(url.trim());
+  if (!/^[A-Za-z0-9_-]{11}$/.test(videoId)) {
+    message(postMessage, "Please enter a valid YouTube video URL.", true);
+    return;
+  }
+  const wrapper = document.createElement("div");
+  wrapper.className = "article-video";
+  const iframe = document.createElement("iframe");
+  iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}`;
+  iframe.title = "YouTube video";
+  iframe.loading = "lazy";
+  iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+  iframe.referrerPolicy = "strict-origin-when-cross-origin";
+  iframe.allowFullscreen = true;
+  wrapper.appendChild(iframe);
+  insertEditorNode(wrapper);
+  message(postMessage, "YouTube video inserted at the cursor position.");
+});
+
 const codeDialog = document.querySelector("#code-dialog");
 document.querySelector("#insert-code").addEventListener("click", () => {
   rememberEditorRange();

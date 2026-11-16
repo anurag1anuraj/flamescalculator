@@ -8,7 +8,19 @@ setupMenu();
 
 function safeArticleHtml(html = "") {
   const docNode = new DOMParser().parseFromString(html, "text/html");
-  docNode.querySelectorAll("script,style,iframe,object,embed,form,svg,math").forEach((node) => node.remove());
+  docNode.querySelectorAll("script,style,object,embed,form,svg,math").forEach((node) => node.remove());
+  docNode.querySelectorAll("iframe").forEach((frame) => {
+    try {
+      const url = new URL(frame.getAttribute("src") || "");
+      const match = url.hostname === "www.youtube-nocookie.com" && /^\/embed\/[A-Za-z0-9_-]{11}$/.test(url.pathname);
+      if (!match) { frame.remove(); return; }
+      frame.setAttribute("title", "YouTube video");
+      frame.setAttribute("loading", "lazy");
+      frame.setAttribute("allow", "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share");
+      frame.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+      frame.setAttribute("allowfullscreen", "");
+    } catch (_) { frame.remove(); }
+  });
   docNode.querySelectorAll("*").forEach((node) => {
     [...node.attributes].forEach((attr) => {
       const name = attr.name.toLowerCase();
