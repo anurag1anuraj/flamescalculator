@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://flamescalculator.online/sitemap.xml
