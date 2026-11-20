@@ -32,6 +32,7 @@ function message(el, text, isError = false) {
   el.classList.toggle("error", isError);
 }
 function resetEditor() {
+  editorRange = null;
   postForm.reset();
   document.querySelector("#post-id").value = "";
   contentEditor.innerHTML = "";
@@ -116,6 +117,9 @@ postList.addEventListener("click", async (event) => {
   if (button.dataset.action === "edit") {
     document.querySelector("#post-id").value = post.id;
     document.querySelector("#post-title").value = post.title || "";
+    const slugInput = document.querySelector("#post-slug");
+    slugInput.value = post.slug || slugify(post.title || "");
+    delete slugInput.dataset.manual;
     document.querySelector("#post-category").value = post.category || "Other";
     document.querySelector("#post-status").value = post.status || "draft";
     document.querySelector("#post-image").value = post.imageUrl || "";
@@ -167,8 +171,20 @@ postForm.addEventListener("submit", async (event) => {
     return;
   }
   const postId = document.querySelector("#post-id").value;
+  const rawSlug = document.querySelector("#post-slug").value.trim();
+  if (/^https?:\/\//i.test(rawSlug)) {
+    message(postMessage, "Slug must be a short URL name, not an image URL. Put the image URL in Cover Image.", true);
+    return;
+  }
+  const cleanSlug = slugify(rawSlug || title);
+  document.querySelector("#post-slug").value = cleanSlug;
+  // Firestore documents are limited to 1 MiB. Keep a margin for metadata.
+  if (new Blob([contentHtml]).size > 850000) {
+    message(postMessage, "Article content is too large to save. Remove or resize embedded images/graphs.", true);
+    return;
+  }
   const data = {
-    title, slug: slugify(title), category, status, imageUrl, excerpt, contentHtml, contentBackground,
+    title, slug: cleanSlug, category, status, imageUrl, excerpt, contentHtml, contentBackground,
     updatedAt: serverTimestamp()
   };
   message(postMessage, "Saving article…");
@@ -189,6 +205,59 @@ postForm.addEventListener("submit", async (event) => {
   }
 });
 
+// The redesigned editor has dedicated Draft and Publish actions.
+document.querySelector("#status-sidebar").addEventListener("change", (e) => {
+  document.querySelector("#post-status").value = e.target.value;
+  document.querySelector("#publish-button").textContent = e.target.value === "published" ? "Publish" : "Save Draft";
+});
+document.querySelector("#publish-button").addEventListener("click", () => {
+  document.querySelector("#post-status").value = "published";
+  document.querySelector("#status-sidebar").value = "published";
+});
+document.querySelector("#save-draft-button").addEventListener("click", () => {
+  document.querySelector("#post-status").value = "draft";
+  document.querySelector("#status-sidebar").value = "draft";
+});
+document.querySelector("#publish-bottom").addEventListener("click", () => {
+  document.querySelector("#post-status").value = "published";
+  document.querySelector("#status-sidebar").value = "published";
+});
+document.querySelector("#editor-cancel").addEventListener("click", resetEditor);
+document.querySelector("#post-title").addEventListener("input", () => {
+  const slugInput = document.querySelector("#post-slug");
+  if (!slugInput.dataset.manual) slugInput.value = slugify(document.querySelector("#post-title").value);
+});
+document.querySelector("#post-slug").addEventListener("input", (e) => { e.target.dataset.manual = "true"; });
+document.querySelector("#post-image").addEventListener("input", () => {
+  const box = document.querySelector("#cover-preview");
+  const url = document.querySelector("#post-image").value.trim();
+  box.innerHTML = url ? `<img src="${escapeHtml(url)}" alt="Cover preview">` : '<span>▧</span><small>Cover image preview</small>';
+});
+document.querySelector("#text-style").addEventListener("mousedown", rememberEditorRange);
+document.querySelector("#text-style").addEventListener("change", (e) => {
+  restoreEditorRange();
+  document.execCommand("formatBlock", false, e.target.value);
+});
+const quoteButton = document.querySelector("#insert-quote");
+quoteButton.addEventListener("mousedown", rememberEditorRange);
+quoteButton.addEventListener("click", () => {
+  restoreEditorRange();
+  const selection = window.getSelection();
+  const selectedText = selection && selection.toString();
+  if (selectedText) {
+    document.execCommand("formatBlock", false, "blockquote");
+  } else {
+    const quote = document.createElement("blockquote");
+    quote.textContent = "Quote text…";
+    insertEditorNode(quote);
+    const range = document.createRange();
+    range.selectNodeContents(quote);
+    range.collapse(false);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    editorRange = range.cloneRange();
+  }
+});
 const editorBgColor = document.querySelector("#editor-bg-color");
 const codeBgColor = document.querySelector("#code-bg-color");
 const codeTextColor = document.querySelector("#code-text-color");
@@ -227,32 +296,43 @@ dialogCodeBg.addEventListener("input", () => { codeBgColor.value = dialogCodeBg.
 dialogCodeText.addEventListener("input", () => { codeTextColor.value = dialogCodeText.value; });
 
 document.querySelectorAll(".editor-toolbar [data-command]").forEach((button) => {
+  button.addEventListener("mousedown", rememberEditorRange);
   button.addEventListener("click", () => {
-    contentEditor.focus();
+    restoreEditorRange();
     const command = button.dataset.command;
     const value = button.dataset.value || null;
     document.execCommand(command, false, value);
   });
 });
+document.querySelector("#insert-link").addEventListener("mousedown", rememberEditorRange);
 document.querySelector("#insert-link").addEventListener("click", () => {
+  restoreEditorRange();
   const url = prompt("Enter the full link URL (https://…):");
   if (!url) return;
   if (!/^https?:\/\//i.test(url)) {
     message(postMessage, "Please use a full http:// or https:// URL.", true);
     return;
   }
-  contentEditor.focus();
-  document.execCommand("createLink", false, url);
+  restoreEditorRange();
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.textContent = window.getSelection()?.toString() || url;
+  insertEditorNode(anchor);
 });
+document.querySelector("#insert-image").addEventListener("mousedown", rememberEditorRange);
 document.querySelector("#insert-image").addEventListener("click", () => {
+  restoreEditorRange();
   const url = prompt("Enter the image URL (https://…):");
   if (!url) return;
   if (!/^https?:\/\//i.test(url)) {
     message(postMessage, "Please use a full http:// or https:// image URL.", true);
     return;
   }
-  contentEditor.focus();
-  document.execCommand("insertImage", false, url);
+  const img = document.createElement("img");
+  img.src = url;
+  img.alt = "Article image";
+  img.className = "article-inline-image";
+  insertEditorNode(img);
 });
 // Insert structured HTML at the last selection inside the article editor.
 let editorRange = null;
@@ -262,6 +342,18 @@ function rememberEditorRange() {
 }
 contentEditor.addEventListener("keyup", rememberEditorRange);
 contentEditor.addEventListener("mouseup", rememberEditorRange);
+// Preserve the editor caret when toolbar buttons take focus.
+document.querySelectorAll(".editor-toolbar button, .editor-toolbar select, .editor-toolbar input").forEach((control) => {
+  control.addEventListener("mousedown", rememberEditorRange);
+});
+function restoreEditorRange() {
+  contentEditor.focus();
+  if (editorRange && contentEditor.contains(editorRange.commonAncestorContainer)) {
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(editorRange.cloneRange());
+  }
+}
 function insertEditorNode(node) {
   contentEditor.focus();
   const selection = window.getSelection();
@@ -326,6 +418,7 @@ document.querySelector("#code-form").addEventListener("submit", (event) => {
   codeDialog.close();
   insertEditorNode(pre);
 });
+document.querySelector("#insert-table").addEventListener("mousedown", rememberEditorRange);
 document.querySelector("#insert-table").addEventListener("click", () => {
   rememberEditorRange();
   const rowInput = prompt("Number of rows (including header):", "3");
@@ -352,6 +445,83 @@ document.querySelector("#insert-table").addEventListener("click", () => {
   message(postMessage, "Table inserted. Click any cell to edit its text.");
 });
 
+// Chart builder: chart is rendered to an image so the graphic persists in Firestore HTML.
+let activeGraphChart = null;
+const graphDialog = document.querySelector("#graph-dialog");
+const graphCanvas = document.querySelector("#graph-canvas");
+function parseGraphRows() {
+  // Split actual Windows, Unix, or Mac line endings (not the literal characters \ and n).
+  return document.querySelector("#graph-data").value
+    .split(/[\r\n]+/)
+    .map(line => line.trim())
+    .filter(Boolean)
+    .map(line => {
+      const commaIndex = line.lastIndexOf(",");
+      if (commaIndex < 1) return null;
+      const label = line.slice(0, commaIndex).trim();
+      const rawValue = line.slice(commaIndex + 1).trim().replace(/,/g, "");
+      const value = Number(rawValue);
+      return label && rawValue !== "" && Number.isFinite(value) ? { label, value } : null;
+    })
+    .filter(Boolean);
+}
+function renderGraphPreview() {
+  if (!window.Chart) {
+    message(postMessage, "Chart library did not load. Check internet connection and reload admin page.", true);
+    return;
+  }
+  const rows = parseGraphRows();
+  if (activeGraphChart) activeGraphChart.destroy();
+  const chartType = document.querySelector("#graph-type").value;
+  activeGraphChart = new Chart(graphCanvas, {
+    type: chartType,
+    data: {
+      labels: rows.map(row => row.label),
+      datasets: [{
+        label: document.querySelector("#graph-title").value || "Data",
+        data: rows.map(row => row.value),
+        backgroundColor: chartType === "pie" ? rows.map((_, i) => [document.querySelector("#graph-color").value,"#e76f51","#2a9d8f","#e9c46a","#6c63ff","#f28482"][i % 6]) : document.querySelector("#graph-color").value,
+        borderColor: document.querySelector("#graph-color").value,
+        borderWidth: 2,
+        fill: chartType === "line" ? false : undefined,
+        tension: .35
+      }]
+    },
+    options: { responsive: false, animation: false, plugins: { legend: { display: chartType === "pie" }, title: { display: !!document.querySelector("#graph-title").value, text: document.querySelector("#graph-title").value } } }, plugins: [{ id: "chosenCanvasBackground", beforeDraw(chart) { const ctx = chart.ctx; ctx.save(); ctx.globalCompositeOperation = "destination-over"; ctx.fillStyle = document.querySelector("#graph-bg-color").value; ctx.fillRect(0, 0, chart.width, chart.height); ctx.restore(); } }]
+  });
+}
+document.querySelector("#insert-graph").addEventListener("mousedown", rememberEditorRange);
+document.querySelector("#insert-graph").addEventListener("click", () => {
+  rememberEditorRange();
+  graphDialog.showModal();
+  renderGraphPreview();
+});
+["graph-type","graph-title","graph-data","graph-color","graph-bg-color"].forEach(id => document.querySelector(`#${id}`).addEventListener("input", renderGraphPreview));
+document.querySelector("#close-graph").addEventListener("click", () => graphDialog.close());
+document.querySelector("#graph-cancel").addEventListener("click", () => graphDialog.close());
+document.querySelector("#graph-insert").addEventListener("click", () => {
+  const rows = parseGraphRows();
+  if (rows.length < 2) { message(postMessage, "Enter at least two data rows as Label,Value.", true); return; }
+  if (!window.Chart || !activeGraphChart) {
+    message(postMessage, "Graph preview is not ready. Check internet connection, then reopen the graph tool.", true);
+    return;
+  }
+  renderGraphPreview();
+  const chartTitle = document.querySelector("#graph-title").value.trim();
+  const img = document.createElement("img");
+  img.className = "article-graph";
+  img.alt = chartTitle || "Data chart";
+  // Compressed JPEG keeps graph images small enough for Firestore document storage.
+  img.src = graphCanvas.toDataURL("image/jpeg", 0.72);
+  img.dataset.chartType = document.querySelector("#graph-type").value;
+  img.style.cssText = "display:block;max-width:100%;width:720px;height:auto;margin:24px auto;border-radius:8px";
+  if (chartTitle) img.title = chartTitle;
+  graphDialog.close();
+  insertEditorNode(img);
+  message(postMessage, "Graph inserted. It will be saved as an image inside your blog post.");
+});
+
+document.querySelector("#preview-post").addEventListener("mousedown", rememberEditorRange);
 document.querySelector("#preview-post").addEventListener("click", () => {
   const title = document.querySelector("#post-title").value.trim() || "Article preview";
   const excerpt = document.querySelector("#post-excerpt").value.trim();
