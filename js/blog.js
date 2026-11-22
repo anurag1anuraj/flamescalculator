@@ -46,7 +46,7 @@ function renderInteractiveCharts(container) {
           tooltip: {
             callbacks: {
               title(items) { return items.length ? items[0].label : ""; },
-              label(item) { return `Collection: ${Number(item.raw).toLocaleString()} Cr`; }
+              label(item) { return `${Number(item.raw).toLocaleString()}${suffix}`; }
             }
           }
         }

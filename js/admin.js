@@ -125,6 +125,9 @@ postList.addEventListener("click", async (event) => {
     document.querySelector("#post-image").value = post.imageUrl || "";
     document.querySelector("#post-excerpt").value = post.excerpt || "";
     contentEditor.innerHTML = post.contentHtml || "";
+    // Rebuild graph canvases when reopening saved drafts/articles in the editor.
+    // Canvas pixels are not stored in HTML, but the chart's data-* attributes are.
+    renderSavedGraphsInEditor(contentEditor);
     const editorBg = post.contentBackground || "#ffffff";
     document.querySelector("#editor-bg-color").value = editorBg;
     contentEditor.style.backgroundColor = editorBg;
@@ -445,6 +448,33 @@ document.querySelector("#insert-table").addEventListener("click", () => {
   message(postMessage, "Table inserted. Click any cell to edit its text.");
 });
 
+// Rehydrate graph previews from their persisted data attributes when loading a saved draft.
+function renderSavedGraphsInEditor(container) {
+  if (!window.Chart) return;
+  container.querySelectorAll(".article-interactive-chart").forEach((wrapper) => {
+    let rows = [];
+    try { rows = JSON.parse(wrapper.dataset.chartRows || "[]"); } catch (_) {}
+    if (!rows.length) return;
+    const canvas = wrapper.querySelector("canvas") || document.createElement("canvas");
+    if (!canvas.parentNode) wrapper.appendChild(canvas);
+    if (canvas._draftChart) canvas._draftChart.destroy();
+    const type = wrapper.dataset.chartType || "bar";
+    const title = wrapper.dataset.chartTitle || "";
+    const color = wrapper.dataset.chartColor || "#829c25";
+    const bg = wrapper.dataset.chartBg || "#ffffff";
+    const suffix = wrapper.dataset.chartSuffix || "";
+    wrapper.style.backgroundColor = bg;
+    wrapper.style.height = wrapper.style.height || "420px";
+    canvas.style.cssText = "width:100%;height:360px";
+    const pie = type === "pie" || type === "doughnut";
+    canvas._draftChart = new Chart(canvas, {
+      type,
+      data: { labels: rows.map(r => r.label), datasets: [{ label: title || "Data", data: rows.map(r => r.value), backgroundColor: pie ? rows.map((_, i) => [color,"#e76f51","#2a9d8f","#e9c46a","#6c63ff","#f28482"][i % 6]) : color, borderColor: color, borderWidth: 2, tension: .35 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: pie }, title: { display: !!title, text: title }, tooltip: { callbacks: { title(items) { return items.length ? items[0].label : ""; }, label(item) { return `${Number(item.raw).toLocaleString()}${suffix}`; } } } } }
+    });
+  });
+}
+
 // Chart builder: store chart data in the article HTML and render it interactively on the reader page.
 let activeGraphChart = null;
 const graphDialog = document.querySelector("#graph-dialog");
@@ -465,6 +495,8 @@ function parseGraphRows() {
     })
     .filter(Boolean);
 }
+function getGraphSuffix() { const selected = document.querySelector("#graph-suffix").value; return selected === "custom" ? document.querySelector("#graph-custom-suffix").value : selected; }
+document.querySelector("#graph-suffix").addEventListener("change", () => { document.querySelector("#graph-custom-suffix-wrap").hidden = document.querySelector("#graph-suffix").value !== "custom"; renderGraphPreview(); });
 function renderGraphPreview() {
   if (!window.Chart) {
     message(postMessage, "Chart library did not load. Check internet connection and reload admin page.", true);
@@ -487,7 +519,7 @@ function renderGraphPreview() {
         tension: .35
       }]
     },
-    options: { responsive: false, animation: false, plugins: { legend: { display: chartType === "pie" }, title: { display: !!document.querySelector("#graph-title").value, text: document.querySelector("#graph-title").value } } }, plugins: [{ id: "chosenCanvasBackground", beforeDraw(chart) { const ctx = chart.ctx; ctx.save(); ctx.globalCompositeOperation = "destination-over"; ctx.fillStyle = document.querySelector("#graph-bg-color").value; ctx.fillRect(0, 0, chart.width, chart.height); ctx.restore(); } }]
+    options: { responsive: false, animation: false, plugins: { legend: { display: chartType === "pie" }, title: { display: !!document.querySelector("#graph-title").value, text: document.querySelector("#graph-title").value }, tooltip: { callbacks: { label(item) { return `${Number(item.raw).toLocaleString()}${getGraphSuffix()}`; } } } } }, plugins: [{ id: "chosenCanvasBackground", beforeDraw(chart) { const ctx = chart.ctx; ctx.save(); ctx.globalCompositeOperation = "destination-over"; ctx.fillStyle = document.querySelector("#graph-bg-color").value; ctx.fillRect(0, 0, chart.width, chart.height); ctx.restore(); } }]
   });
 }
 document.querySelector("#insert-graph").addEventListener("mousedown", rememberEditorRange);
@@ -496,7 +528,7 @@ document.querySelector("#insert-graph").addEventListener("click", () => {
   graphDialog.showModal();
   renderGraphPreview();
 });
-["graph-type","graph-title","graph-data","graph-color","graph-bg-color"].forEach(id => document.querySelector(`#${id}`).addEventListener("input", renderGraphPreview));
+["graph-type","graph-title","graph-data","graph-color","graph-bg-color","graph-suffix","graph-custom-suffix"].forEach(id => document.querySelector(`#${id}`).addEventListener("input", renderGraphPreview));
 document.querySelector("#close-graph").addEventListener("click", () => graphDialog.close());
 document.querySelector("#graph-cancel").addEventListener("click", () => graphDialog.close());
 document.querySelector("#graph-insert").addEventListener("click", () => {
@@ -515,6 +547,7 @@ document.querySelector("#graph-insert").addEventListener("click", () => {
   chartBox.setAttribute("data-chart-rows", JSON.stringify(rows));
   chartBox.setAttribute("data-chart-color", document.querySelector("#graph-color").value);
   chartBox.setAttribute("data-chart-bg", document.querySelector("#graph-bg-color").value);
+  chartBox.setAttribute("data-chart-suffix", getGraphSuffix());
   chartBox.setAttribute("contenteditable", "false");
   chartBox.style.cssText = "display:block;max-width:100%;width:720px;height:420px;margin:24px auto;padding:12px;border-radius:8px";
   const chartPlaceholder = document.createElement("p");
@@ -558,7 +591,7 @@ document.querySelector("#graph-insert").addEventListener("click", () => {
       plugins: {
         legend: { display: document.querySelector("#graph-type").value === "pie" },
         title: { display: !!chartTitle, text: chartTitle },
-        tooltip: { callbacks: { title(items) { return items.length ? items[0].label : ""; }, label(item) { return `Collection: ${Number(item.raw).toLocaleString()} Cr`; } } }
+        tooltip: { callbacks: { title(items) { return items.length ? items[0].label : ""; }, label(item) { return `${Number(item.raw).toLocaleString()}${getGraphSuffix()}`; } } }
       }
     }
   });

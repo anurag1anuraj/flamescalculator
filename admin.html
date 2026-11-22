@@ -91,6 +91,8 @@
         <label>Data <span class="field-muted">(one Label,Value per line — use a new line for each row)</span><textarea id="graph-data" rows="5" placeholder="1998,500&#10;2003,1000&#10;2005,5000&#10;2028,130"></textarea></label>
         <label>Graph color<input id="graph-color" type="color" value="#3157d5"></label>
         <label>Graph background<input id="graph-bg-color" type="color" value="#ffffff"></label>
+        <label>Value format<select id="graph-suffix"><option value="">No suffix</option><option value=" Cr">Cr</option><option value=" Million">Million</option><option value="%">%</option><option value="custom">Custom</option></select></label>
+        <label id="graph-custom-suffix-wrap" hidden>Custom suffix<input id="graph-custom-suffix" placeholder="e.g. points, km, USD"></label>
       </div>
       <div class="graph-preview"><canvas id="graph-canvas" width="720" height="380"></canvas></div>
       <div class="graph-dialog-actions"><button type="button" id="graph-cancel" class="button button-light">Cancel</button><button type="button" id="graph-insert" class="button button-dark">Insert into article</button></div>
