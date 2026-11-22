@@ -19,6 +19,7 @@ function renderInteractiveCharts(container) {
     const title = wrapper.dataset.chartTitle || "";
     const color = wrapper.dataset.chartColor || "#829c25";
     const background = wrapper.dataset.chartBg || "#ffffff";
+    const suffix = wrapper.dataset.chartSuffix || "";
     wrapper.style.backgroundColor = background;
     canvas.style.width = "100%";
     canvas.style.height = "100%";

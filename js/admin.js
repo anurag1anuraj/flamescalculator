@@ -433,6 +433,8 @@ document.querySelector("#insert-table").addEventListener("click", () => {
     message(postMessage, "Enter 1–30 rows and 1–12 columns.", true);
     return;
   }
+  const headerBg = prompt("Table heading background color (hex):", "#f1f5f9") || "#f1f5f9";
+  const headerText = prompt("Table heading text color (hex):", "#111827") || "#111827";
   const table = document.createElement("table");
   table.style.cssText = "border-collapse:collapse;width:100%;margin:20px 0";
   for (let r = 0; r < rows; r++) {
@@ -440,7 +442,7 @@ document.querySelector("#insert-table").addEventListener("click", () => {
     for (let c = 0; c < cols; c++) {
       const cell = document.createElement(r === 0 ? "th" : "td");
       cell.textContent = r === 0 ? `Heading ${c + 1}` : "Edit text";
-      cell.style.cssText = "border:1px solid #cbd5e1;padding:10px 12px;text-align:left;" + (r === 0 ? "background:#f1f5f9;font-weight:700" : "");
+      cell.style.cssText = "border:1px solid #cbd5e1;padding:10px 12px;text-align:left;" + (r === 0 ? `background:${headerBg};color:${headerText};font-weight:700` : "");
       tr.appendChild(cell);
     }
   }
@@ -477,6 +479,8 @@ function renderSavedGraphsInEditor(container) {
 
 // Chart builder: store chart data in the article HTML and render it interactively on the reader page.
 let activeGraphChart = null;
+let selectedGraphWrapper = null;
+let editingGraphWrapper = null;
 const graphDialog = document.querySelector("#graph-dialog");
 const graphCanvas = document.querySelector("#graph-canvas");
 function parseGraphRows() {
@@ -503,30 +507,71 @@ function renderGraphPreview() {
     return;
   }
   const rows = parseGraphRows();
-  if (activeGraphChart) activeGraphChart.destroy();
+  if (activeGraphChart) { activeGraphChart.destroy(); activeGraphChart = null; }
+  // Reset canvas dimensions after destroying the prior chart; Chart.js can otherwise
+  // retain stale dimensions when the dialog is opened for an existing graph.
+  graphCanvas.width = 720;
+  graphCanvas.height = 380;
   const chartType = document.querySelector("#graph-type").value;
+  const title = document.querySelector("#graph-title").value.trim();
+  const color = document.querySelector("#graph-color").value;
+  const bg = document.querySelector("#graph-bg-color").value;
+  const suffix = getGraphSuffix();
+  graphCanvas.style.backgroundColor = bg;
   activeGraphChart = new Chart(graphCanvas, {
     type: chartType,
     data: {
       labels: rows.map(row => row.label),
       datasets: [{
-        label: document.querySelector("#graph-title").value || "Data",
+        label: title || "Data",
         data: rows.map(row => row.value),
-        backgroundColor: chartType === "pie" ? rows.map((_, i) => [document.querySelector("#graph-color").value,"#e76f51","#2a9d8f","#e9c46a","#6c63ff","#f28482"][i % 6]) : document.querySelector("#graph-color").value,
-        borderColor: document.querySelector("#graph-color").value,
-        borderWidth: 2,
-        fill: chartType === "line" ? false : undefined,
-        tension: .35
+        backgroundColor: chartType === "pie" || chartType === "doughnut" ? rows.map((_, i) => [color,"#e76f51","#2a9d8f","#e9c46a","#6c63ff","#f28482"][i % 6]) : color,
+        borderColor: color, borderWidth: 2, fill: chartType === "line" ? false : undefined, tension: .35
       }]
     },
-    options: { responsive: false, animation: false, plugins: { legend: { display: chartType === "pie" }, title: { display: !!document.querySelector("#graph-title").value, text: document.querySelector("#graph-title").value }, tooltip: { callbacks: { label(item) { return `${Number(item.raw).toLocaleString()}${getGraphSuffix()}`; } } } } }, plugins: [{ id: "chosenCanvasBackground", beforeDraw(chart) { const ctx = chart.ctx; ctx.save(); ctx.globalCompositeOperation = "destination-over"; ctx.fillStyle = document.querySelector("#graph-bg-color").value; ctx.fillRect(0, 0, chart.width, chart.height); ctx.restore(); } }]
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      plugins: { legend: { display: chartType === "pie" || chartType === "doughnut" }, title: { display: !!title, text: title },
+        tooltip: { callbacks: { title(items) { return items.length ? items[0].label : ""; }, label(item) { return `${Number(item.raw).toLocaleString()}${suffix}`; } } }
+      }
+    },
+    plugins: [{ id: "chosenCanvasBackground", beforeDraw(chart) { const ctx = chart.ctx; ctx.save(); ctx.globalCompositeOperation = "destination-over"; ctx.fillStyle = bg; ctx.fillRect(0, 0, chart.width, chart.height); ctx.restore(); } }]
   });
 }
 document.querySelector("#insert-graph").addEventListener("mousedown", rememberEditorRange);
+contentEditor.addEventListener("click", (event) => {
+  const graphBlock = event.target.closest(".article-interactive-chart");
+  if (selectedGraphWrapper) selectedGraphWrapper.style.outline = "";
+  selectedGraphWrapper = graphBlock;
+  if (selectedGraphWrapper) selectedGraphWrapper.style.outline = "2px solid #829c25";
+});
 document.querySelector("#insert-graph").addEventListener("click", () => {
   rememberEditorRange();
+  editingGraphWrapper = selectedGraphWrapper;
+  if (editingGraphWrapper) {
+    document.querySelector("#graph-type").value = editingGraphWrapper.dataset.chartType || "bar";
+    document.querySelector("#graph-title").value = editingGraphWrapper.dataset.chartTitle || "";
+    const rows = JSON.parse(editingGraphWrapper.dataset.chartRows || "[]");
+    document.querySelector("#graph-data").value = rows.map(row => `${row.label},${row.value}`).join("\n");
+    document.querySelector("#graph-color").value = editingGraphWrapper.dataset.chartColor || "#3157d5";
+    document.querySelector("#graph-bg-color").value = editingGraphWrapper.dataset.chartBg || "#ffffff";
+    const suffix = editingGraphWrapper.dataset.chartSuffix || "";
+    const suffixSelect = document.querySelector("#graph-suffix");
+    const known = Array.from(suffixSelect.options).some(option => option.value === suffix);
+    suffixSelect.value = known ? suffix : "custom";
+    if (!known) document.querySelector("#graph-custom-suffix").value = suffix;
+    document.querySelector("#graph-custom-suffix-wrap").hidden = known;
+    document.querySelector("#graph-insert").textContent = "Update graph";
+    document.querySelector("#graph-dialog h2").textContent = "Edit graph";
+  } else {
+    document.querySelector("#graph-insert").textContent = "Insert into article";
+    document.querySelector("#graph-dialog h2").textContent = "Insert graph";
+    document.querySelector("#graph-data").value = "";
+    document.querySelector("#graph-title").value = "";
+  }
   graphDialog.showModal();
-  renderGraphPreview();
+  // Wait until the dialog has a measurable layout before Chart.js sizes the canvas.
+  requestAnimationFrame(() => renderGraphPreview());
 });
 ["graph-type","graph-title","graph-data","graph-color","graph-bg-color","graph-suffix","graph-custom-suffix"].forEach(id => document.querySelector(`#${id}`).addEventListener("input", renderGraphPreview));
 document.querySelector("#close-graph").addEventListener("click", () => graphDialog.close());
@@ -540,6 +585,31 @@ document.querySelector("#graph-insert").addEventListener("click", () => {
   }
   renderGraphPreview();
   const chartTitle = document.querySelector("#graph-title").value.trim();
+  if (editingGraphWrapper) {
+    editingGraphWrapper.dataset.chartType = document.querySelector("#graph-type").value;
+    editingGraphWrapper.dataset.chartTitle = chartTitle;
+    editingGraphWrapper.dataset.chartRows = JSON.stringify(rows);
+    editingGraphWrapper.dataset.chartColor = document.querySelector("#graph-color").value;
+    editingGraphWrapper.dataset.chartBg = document.querySelector("#graph-bg-color").value;
+    editingGraphWrapper.dataset.chartSuffix = getGraphSuffix();
+    const placeholder = editingGraphWrapper.querySelector("p");
+    if (placeholder) placeholder.textContent = `${chartTitle || "Interactive graph"} (interactive chart)`;
+    const oldCanvas = editingGraphWrapper.querySelector("canvas");
+    if (oldCanvas && oldCanvas._draftChart) oldCanvas._draftChart.destroy();
+    const newCanvas = document.createElement("canvas");
+    newCanvas.style.cssText = "width:100%;height:360px";
+    if (oldCanvas) oldCanvas.replaceWith(newCanvas); else editingGraphWrapper.appendChild(newCanvas);
+    renderSavedGraphsInEditor(editingGraphWrapper);
+    editingGraphWrapper.style.backgroundColor = document.querySelector("#graph-bg-color").value;
+    graphDialog.close();
+    editingGraphWrapper.style.outline = "";
+    selectedGraphWrapper = null;
+    editingGraphWrapper = null;
+    document.querySelector("#graph-insert").textContent = "Insert into article";
+    document.querySelector("#graph-dialog h2").textContent = "Insert graph";
+    message(postMessage, "Graph updated. Save or publish the article to apply the changes.");
+    return;
+  }
   const chartBox = document.createElement("div");
   chartBox.className = "article-interactive-chart";
   chartBox.setAttribute("data-chart-type", document.querySelector("#graph-type").value);
