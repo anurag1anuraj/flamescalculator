@@ -6,6 +6,57 @@ const root = document.querySelector("#article-content");
 document.querySelector("#year").textContent = new Date().getFullYear();
 setupMenu();
 
+function renderInteractiveCharts(container) {
+  if (!window.Chart) return;
+  container.querySelectorAll(".article-interactive-chart").forEach((wrapper) => {
+    if (wrapper.dataset.rendered === "true") return;
+    let rows = [];
+    try { rows = JSON.parse(wrapper.dataset.chartRows || "[]"); } catch (_) {}
+    if (!rows.length) return;
+    const canvas = wrapper.querySelector("canvas") || document.createElement("canvas");
+    if (!canvas.parentNode) wrapper.appendChild(canvas);
+    const chartType = wrapper.dataset.chartType || "bar";
+    const title = wrapper.dataset.chartTitle || "";
+    const color = wrapper.dataset.chartColor || "#829c25";
+    const background = wrapper.dataset.chartBg || "#ffffff";
+    wrapper.style.backgroundColor = background;
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
+    const isPie = chartType === "pie" || chartType === "doughnut";
+    new Chart(canvas, {
+      type: chartType,
+      data: {
+        labels: rows.map(r => r.label),
+        datasets: [{
+          label: "Collection",
+          data: rows.map(r => r.value),
+          backgroundColor: isPie ? rows.map((_, i) => [color,"#e76f51","#2a9d8f","#e9c46a","#6c63ff","#f28482"][i % 6]) : color,
+          borderColor: color,
+          borderWidth: 2,
+          tension: .35
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: "nearest", intersect: true },
+        plugins: {
+          legend: { display: isPie },
+          title: { display: !!title, text: title },
+          tooltip: {
+            callbacks: {
+              title(items) { return items.length ? items[0].label : ""; },
+              label(item) { return `Collection: ${Number(item.raw).toLocaleString()} Cr`; }
+            }
+          }
+        }
+      }
+    });
+    wrapper.dataset.rendered = "true";
+  });
+}
+
+
 function safeArticleHtml(html = "") {
   const docNode = new DOMParser().parseFromString(html, "text/html");
   docNode.querySelectorAll("script,style,object,embed,form,svg,math").forEach((node) => node.remove());
@@ -100,6 +151,15 @@ if (!slug) {
         <h1>${escapeHtml(found.title)}</h1>
         ${found.excerpt ? `<p class="article-excerpt">${escapeHtml(found.excerpt)}</p>` : ""}
       </header>${image}<article class="article-content" style="background:${escapeHtml(found.contentBackground || "#ffffff")};padding:18px;border-radius:12px">${safeArticleHtml(found.contentHtml || "")}</article>`;
+      const articleBody = root.querySelector(".article-content");
+      articleBody.querySelectorAll("table").forEach((table) => {
+        if (table.parentElement?.classList.contains("article-table-wrap")) return;
+        const wrap = document.createElement("div");
+        wrap.className = "article-table-wrap";
+        table.parentNode.insertBefore(wrap, table);
+        wrap.appendChild(table);
+      });
+      renderInteractiveCharts(articleBody);
     }
   } catch (error) {
     console.error(error);

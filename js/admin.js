@@ -445,7 +445,7 @@ document.querySelector("#insert-table").addEventListener("click", () => {
   message(postMessage, "Table inserted. Click any cell to edit its text.");
 });
 
-// Chart builder: chart is rendered to an image so the graphic persists in Firestore HTML.
+// Chart builder: store chart data in the article HTML and render it interactively on the reader page.
 let activeGraphChart = null;
 const graphDialog = document.querySelector("#graph-dialog");
 const graphCanvas = document.querySelector("#graph-canvas");
@@ -508,17 +508,61 @@ document.querySelector("#graph-insert").addEventListener("click", () => {
   }
   renderGraphPreview();
   const chartTitle = document.querySelector("#graph-title").value.trim();
-  const img = document.createElement("img");
-  img.className = "article-graph";
-  img.alt = chartTitle || "Data chart";
-  // Compressed JPEG keeps graph images small enough for Firestore document storage.
-  img.src = graphCanvas.toDataURL("image/jpeg", 0.72);
-  img.dataset.chartType = document.querySelector("#graph-type").value;
-  img.style.cssText = "display:block;max-width:100%;width:720px;height:auto;margin:24px auto;border-radius:8px";
-  if (chartTitle) img.title = chartTitle;
+  const chartBox = document.createElement("div");
+  chartBox.className = "article-interactive-chart";
+  chartBox.setAttribute("data-chart-type", document.querySelector("#graph-type").value);
+  chartBox.setAttribute("data-chart-title", chartTitle);
+  chartBox.setAttribute("data-chart-rows", JSON.stringify(rows));
+  chartBox.setAttribute("data-chart-color", document.querySelector("#graph-color").value);
+  chartBox.setAttribute("data-chart-bg", document.querySelector("#graph-bg-color").value);
+  chartBox.setAttribute("contenteditable", "false");
+  chartBox.style.cssText = "display:block;max-width:100%;width:720px;height:420px;margin:24px auto;padding:12px;border-radius:8px";
+  const chartPlaceholder = document.createElement("p");
+  chartPlaceholder.textContent = `${chartTitle || "Interactive graph"} (interactive chart)`;
+  chartPlaceholder.style.cssText = "text-align:center;color:#777;font-size:13px;margin:0 0 8px";
+  const chartPreviewCanvas = document.createElement("canvas");
+  chartPreviewCanvas.style.cssText = "width:100%;height:360px";
+  chartBox.append(chartPlaceholder, chartPreviewCanvas);
   graphDialog.close();
-  insertEditorNode(img);
-  message(postMessage, "Graph inserted. It will be saved as an image inside your blog post.");
+  // Insert the non-editable chart block plus an editable paragraph after it,
+  // so the author can continue typing immediately after the graph.
+  const continuation = document.createElement("p");
+  continuation.innerHTML = "<br>";
+  insertEditorNode(chartBox);
+  const afterChart = document.createRange();
+  afterChart.setStartAfter(chartBox);
+  afterChart.collapse(true);
+  afterChart.insertNode(continuation);
+  const caretRange = document.createRange();
+  caretRange.selectNodeContents(continuation);
+  caretRange.collapse(true);
+  const caretSelection = window.getSelection();
+  caretSelection.removeAllRanges();
+  caretSelection.addRange(caretRange);
+  editorRange = caretRange.cloneRange();
+  const editorCanvas = chartBox.querySelector("canvas");
+  new Chart(editorCanvas, {
+    type: document.querySelector("#graph-type").value,
+    data: {
+      labels: rows.map(row => row.label),
+      datasets: [{
+        label: "Collection",
+        data: rows.map(row => row.value),
+        backgroundColor: document.querySelector("#graph-type").value === "pie" ? rows.map((_, i) => [document.querySelector("#graph-color").value,"#e76f51","#2a9d8f","#e9c46a","#6c63ff","#f28482"][i % 6]) : document.querySelector("#graph-color").value,
+        borderColor: document.querySelector("#graph-color").value,
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: document.querySelector("#graph-type").value === "pie" },
+        title: { display: !!chartTitle, text: chartTitle },
+        tooltip: { callbacks: { title(items) { return items.length ? items[0].label : ""; }, label(item) { return `Collection: ${Number(item.raw).toLocaleString()} Cr`; } } }
+      }
+    }
+  });
+  message(postMessage, "Interactive graph inserted. Movie names and values will show on hover/tap in the published article.");
 });
 
 document.querySelector("#preview-post").addEventListener("mousedown", rememberEditorRange);
